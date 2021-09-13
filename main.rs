@@ -1,3 +1,4 @@
+use std::env::args;
 use std::fs::File;
 use std::io::BufReader;
 use std::process::{exit, Command};
@@ -36,13 +37,29 @@ fn play_sound() -> Stoppable<Repeat<Decoder<BufReader<File>>>> {
 }
 
 fn execute_command(cmd: String) -> Option<i32> {
-    Command::new(cmd).status().ok()?.code()
+    println!("{}", cmd);
+
+    let mut cmd_parts = cmd.split(" ");
+
+    let cmd = cmd_parts.next()?;
+
+    let mut command = Command::new(cmd);
+
+    for arg in cmd_parts {
+        command.arg(arg);
+    }
+
+    let status = command.status();
+
+    if let Ok(exit) = status {
+        exit.code()
+    } else {
+        None
+    }
 }
 
 fn main() {
     let cmd = args().skip(1).collect::<Vec<String>>().join(" ");
-
-    println!("{}", cmd);
 
     print_temperature();
 
